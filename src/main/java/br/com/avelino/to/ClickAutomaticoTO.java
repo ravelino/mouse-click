@@ -2,42 +2,66 @@ package br.com.avelino.to;
 
 public class ClickAutomaticoTO {
 
-	private int qtdRepetir;
-	private int eixoX; 
-	private int eixoY;
+	private Long qtdRepetir;
+	
+	private Integer eixoX;
+	
+	private Integer eixoY;
+	
 	private int milessegundos;
 	
+	private Integer itemLista;
 	
+	private Integer tamanhoLista;
 	
-	public ClickAutomaticoTO(String qtdRepetir, String eixoX, String eixoY,String milessegundos) {
-		super();
-		this.qtdRepetir = Integer.valueOf(qtdRepetir);
-		this.eixoX = Integer.valueOf(eixoX);
-		this.eixoY = Integer.valueOf(eixoY);
-		this.milessegundos = Integer.valueOf(milessegundos);
+	private ClickAutomaticoTO() {}
+	
+	public static ClickAutomaticoTO builder() {
+		return new ClickAutomaticoTO();
 	}
-	public int getQtdRepetir() {
+	
+	public Long getQtdRepetir() {
 		return qtdRepetir;
 	}
-	public void setQtdRepetir(int qtdRepetir) {
+	public ClickAutomaticoTO qtdRepetir(Long qtdRepetir) {
 		this.qtdRepetir = qtdRepetir;
+		return this;
 	}
-	public int getEixoX() {
-		return eixoX;
-	}
-	public void setEixoX(int eixoX) {
-		this.eixoX = eixoX;
-	}
-	public int getEixoY() {
-		return eixoY;
-	}
-	public void setEixoY(int eixoY) {
-		this.eixoY = eixoY;
-	}
+	
 	public int getMilessegundos() {
 		return milessegundos;
 	}
-	public void setMilessegundos(int milessegundos) {
+	public ClickAutomaticoTO milessegundos(int milessegundos) {
 		this.milessegundos = milessegundos;
+		return this;
+	}
+	
+	public Integer getEixoX() {
+		return eixoX;
+	}
+	public ClickAutomaticoTO eixoX(Integer eixoX) {
+		this.eixoX = eixoX;
+		return this;
+	}
+	public Integer getEixoY() {
+		return eixoY;
+	}
+	public ClickAutomaticoTO eixoY(Integer eixoY) {
+		this.eixoY = eixoY;
+		return this;
+	}
+	public Integer getItemLista() {
+		return itemLista;
+	}
+	public ClickAutomaticoTO itemLista(Integer itemLista) {
+		this.itemLista = itemLista;
+		return this;
+	}
+	public Integer getTamanhoLista() {
+		return tamanhoLista;
+	}
+	public ClickAutomaticoTO tamanhoLista(Integer tamanhoLista) {
+		this.tamanhoLista = tamanhoLista;
+		return this;
 	}
 }

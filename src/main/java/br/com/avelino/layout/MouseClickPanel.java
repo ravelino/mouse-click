@@ -4,11 +4,15 @@ import java.awt.Panel;
 
 import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
 
 public class MouseClickPanel extends Panel {
 	
+	private DefaultTableModel tableModel = new DefaultTableModel();
+	
 	protected static final int WIDTH_TEXT = 100;
 	protected static final int HEIGHT_TEXT = 22;
+	protected static final int HEIGHT_LABEL = 30;
 
 	private static final long serialVersionUID = -4644599627227048051L;
 	
@@ -53,5 +57,13 @@ public class MouseClickPanel extends Panel {
 	
 	public JButton getButtonStartStop() {
 		return buttonStartStop;
+	}
+
+	public DefaultTableModel getTableModel() {
+		return tableModel;
+	}
+
+	public void setTableModel(DefaultTableModel tableModel) {
+		this.tableModel = tableModel;
 	}
 }

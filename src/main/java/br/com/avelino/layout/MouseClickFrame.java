@@ -24,7 +24,7 @@ public class MouseClickFrame extends JFrame {
 	private JMenuBar menuBar;
 	
 	private Panel defaultPanel = new DefaultPanel();
-	private Panel naruto = new NarutoUltimatePanel();
+	//private Panel naruto = new NarutoUltimatePanel();
 	
 	public MouseClickFrame () {
 		
@@ -42,7 +42,7 @@ public class MouseClickFrame extends JFrame {
 		JMenu options = new JMenu("Opções");
 		JMenu layout = new JMenu("Laout");
 		JMenuItem about = new JMenuItem("Sobre");
-		options.add(layout);
+		//options.add(layout);
 		options.add(new JSeparator());
 		
 		options.add(about);
@@ -64,7 +64,7 @@ public class MouseClickFrame extends JFrame {
 		
 		super.setJMenuBar(menuBar);
 		super.add(defaultPanel);
-		super.add(naruto);
+		//super.add(naruto);
 		super.setVisible(true);
 	}
 
@@ -91,6 +91,6 @@ public class MouseClickFrame extends JFrame {
 	}
 
 	public Panel getNaruto() {
-		return naruto;
+		return null;
 	}
 }

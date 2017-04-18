@@ -1,193 +1,187 @@
 package br.com.avelino.layout;
 
-import java.awt.Color;
+import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
-import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
 
-import org.jnativehook.GlobalScreen;
-import org.jnativehook.NativeHookException;
-
-import br.com.avelino.core.ClickAutomaticoObserver;
-import br.com.avelino.core.MouseObserver;
-import br.com.avelino.core.TeclaObserver;
+import br.com.avelino.core.ClickAutomaticoTimer;
+import br.com.avelino.core.HookConfigure;
+import br.com.avelino.core.KeyListenerRemoverLetras;
 import br.com.avelino.to.ClickAutomaticoTO;
 
-public class DefaultPanel extends MouseClickPanel {
+public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 
-private static final long serialVersionUID = 1302762546797380758L;
-	
-	
-	private static final int MARGEM_ESQUERDA_LABEL = 10;
-	private static final int MARGEM_ESQUERDA_TEXT = 120;
-	private static final int WIDTH_LABEL = 110;
-	private static final int HEIGHT_LABEL = 30;
-	
-	
+	private static final long serialVersionUID = 1302762546797380758L;
+
 	private static final String LABEL_COMECAR = "Começar";
 	private static final String LABEL_PARAR = "Parar";
-	private static final String LABEL_ATUAL_POS = "";
+
+
+	protected static final int WIDTH_TEXT = 100;
+	protected static final int HEIGHT_TEXT = 22;
+	protected static final int HEIGHT_LABEL = 30;
+
+	private DefaultTableModel tableModel = new DefaultTableModel();
+	private JTextField valueRepetir = new JTextField();
+	private JTextField valueMilli = new JTextField();
+
+	protected JButton buttonStartStop = new JButton();
 	
-	
-	
-	private static JLabel labelPosAtual = new JLabel(LABEL_ATUAL_POS);
-	
-	private JButton buttonStartStop;
-	
-	private ClickAutomaticoObserver clickAutomaticoObserver;
-	
+	protected JButton buttonClearTable = new JButton();
+
+	private List<ClickAutomaticoTimer> listClickAutomaticoTimer = new ArrayList<ClickAutomaticoTimer>();
+
 	public DefaultPanel() {
-		super.setLayout(null);
-		initEixoX();
-		initEixoY();
+
+		this.setLayout(null);
+
+		initTableModel();
+		HookConfigure.initHooks(this);
+
+		initButtonStartStop();
 		initRepetir();
 		initMilessegundos();
-		initPosAtual();
-		initButtonStartStop();
-		
-		initLabelCaptureF12();
-		
-		addEventMouseListner(this);
+		initButtonClear();
 		addEventButton();
-		
-		try {
-			GlobalScreen.registerNativeHook();
-			//GlobalScreen.getInstance().addNativeKeyListener(new TeclaObserver(this));
-			GlobalScreen.addNativeKeyListener(new TeclaObserver(this));
-		} catch (NativeHookException ex) {
-			System.err.println(ex.getMessage());
-			System.exit(1);
-		}
-		
-		super.setVisible(true);
+		addEventButtonClear();
+		addEventRemoveLetras(valueMilli);
+		addEventRemoveLetras(valueRepetir);
+
 		super.setSize(700, 500);
 	}
 
-	private void addEventButton() {
-		buttonStartStop.addActionListener(new ActionListener() {
-			
+	private void initTableModel() {
+		tableModel.addColumn("Posicão X");
+		tableModel.addColumn("Posição Y");
+		JTable table = new JTable(tableModel);
+		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setLocation(10, 60);
+		scrollPane.setSize(600, 150);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+		super.add(scrollPane);
+	}
+	
+	private void initButtonClear() {
+		buttonClearTable = new JButton("Limpar lista");
+		buttonClearTable.setLocation(460, 400);
+		buttonClearTable.setSize(180, HEIGHT_TEXT);
+		this.add(buttonClearTable);
+	}
+	
+	private void addEventButtonClear() {
+		buttonClearTable.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JButton btn = (JButton)e.getSource();
-				
-				String label = btn.getText();
-				
-				if (LABEL_PARAR.equals(label)) {
-					btn.setText(LABEL_COMECAR);
-					clickAutomaticoObserver.getTimer().stop();
-				} else {
-					btn.setText(LABEL_PARAR);
-					
-					ClickAutomaticoTO clickAutomaticoTO = 
-							new ClickAutomaticoTO(valueRepetir.getText(),valueX.getText(),
-									valueY.getText(), valueMilli.getText());
-					
-					actionStart(clickAutomaticoTO);
+				valueRepetir.setText("");
+				valueMilli.setText("");
+				while (tableModel.getRowCount() > 0) {
+					tableModel.removeRow(0);
 				}
 			}
 		});
 	}
 
-	private void addEventMouseListner(MouseClickPanel panel) {
-		
-		MouseObserver mo = new MouseObserver(panel);
+	private void addEventButton() {
+		buttonStartStop.addActionListener(new ActionListener() {
 
-		mo.addMouseMotionListener(new MouseMotionListener() {
-            public void mouseMoved(MouseEvent e) {
-            	NumberFormat nf = NumberFormat.getInstance();
-                nf.setMaximumFractionDigits(0);
-            	StringBuilder sb = new StringBuilder("Eixo X = ");
-            	sb.append(nf.format(e.getPoint().getX()));
-            	sb.append(" || Eixo Y = ");
-            	sb.append(nf.format(e.getPoint().getY()));
-            	labelPosAtual.setText(sb.toString());
-            }
+			public void actionPerformed(ActionEvent e) {
+				final Integer linhas = tableModel.getRowCount();
+				
+				if (linhas > 0) {
+					String label = buttonStartStop.getText();
 
-            public void mouseDragged(MouseEvent e) {}
-        });
+					if (LABEL_PARAR.equals(label)) {
+						timersStop();
+					} else {
+						buttonStartStop.setText(LABEL_PARAR);
 
-		mo.start();
+						for (int i = 0; i < linhas; i++) {
+							final Integer eixoX = (Integer) tableModel.getValueAt(i, 0);
+							final Integer eixoY = (Integer) tableModel.getValueAt(i, 1);
+							
+							final Optional<String> optionalRepetir = Optional.of(valueRepetir.getText()).filter((valor)-> valor.length() > 0);
+							final Optional<String> optionalMilli = Optional.of(valueMilli.getText()).filter((valor)-> valor.length() > 0);
+							final String rep = optionalRepetir.orElse("0");
+							final String milli = optionalMilli.orElse("0");
+							
+							final ClickAutomaticoTO to = 
+									ClickAutomaticoTO
+										.builder()
+										.eixoX(eixoX)
+										.eixoY(eixoY)
+										.qtdRepetir(Long.valueOf(rep))
+										.milessegundos(Integer.valueOf(milli))
+										.itemLista(i + 1)
+										.tamanhoLista(linhas);
+							
+								listClickAutomaticoTimer.add(new ClickAutomaticoTimer(to));
+						}
+						
+						timersStart();
+					}
+				}
+			}
+		});
 	}
-	
-	private void actionStart(ClickAutomaticoTO clickAutomaticoTO) {
-		if (clickAutomaticoTO.getQtdRepetir() > 0) {
-			clickAutomaticoObserver = new ClickAutomaticoObserver(this, clickAutomaticoTO);
-			clickAutomaticoObserver.getTimer().start();
+
+	public void timersStart() {
+		buttonStartStop.doClick();
+		if (tableModel.getRowCount() > 0) {
+			listClickAutomaticoTimer.get(0).start(listClickAutomaticoTimer);
 		}
 	}
-	
+
+	public void timersStop() {
+		buttonStartStop.setText(LABEL_COMECAR);
+		for (ClickAutomaticoTimer timer : listClickAutomaticoTimer) {
+			timer.stop();
+		}
+	}
+
 	private void initButtonStartStop() {
 		buttonStartStop = new JButton("Começar");
-		buttonStartStop.setLocation(60, 143);
+		buttonStartStop.setLocation(460, 10);
 		buttonStartStop.setSize(WIDTH_TEXT, HEIGHT_TEXT);
-		//this.getContentPane().add(buttonStartStop);
 		this.add(buttonStartStop);
 	}
 
-	private void initPosAtual() {
-		labelPosAtual.setLocation(MARGEM_ESQUERDA_LABEL, 180);
-		labelPosAtual.setSize(350, HEIGHT_LABEL);
-		//this.getContentPane().add(labelPosAtual);
-		this.add(labelPosAtual);
-	}
-
-	private void initMilessegundos() {
-		JLabel labelMilesec = new JLabel("Milissegundos");
-		labelMilesec.setLocation(MARGEM_ESQUERDA_LABEL, 100);
-		labelMilesec.setSize(WIDTH_LABEL, HEIGHT_LABEL);
-		//this.getContentPane().add(labelMilesec);
-		this.add(labelMilesec);
-		
-		valueMilli.setLocation(MARGEM_ESQUERDA_TEXT, 103);
-		valueMilli.setSize(WIDTH_TEXT, HEIGHT_TEXT);
-		this.add(valueMilli);
-	}
-	
-	private void initLabelCaptureF12() {
-		JLabel labelF12 = new JLabel("Aperte F12 para gravar a posição do mouse.");
-		labelF12.setLocation(MARGEM_ESQUERDA_LABEL, 240);
-		labelF12.setSize(350, HEIGHT_LABEL);
-		labelF12.setForeground (Color.GREEN);
-		
-		//labelF12.setBackground(Color.GREEN);
-		labelF12.setOpaque(true);
-		this.add(labelF12);
-	}
-
 	private void initRepetir() {
-		JLabel labelRepetir = new JLabel("Qtd. Repetir");
-		labelRepetir.setLocation(MARGEM_ESQUERDA_LABEL, 70);
-		labelRepetir.setSize(WIDTH_LABEL, HEIGHT_LABEL);
+		JLabel labelRepetir = new JLabel("Repetir");
+		labelRepetir.setLocation(10, 10);
+		labelRepetir.setSize(80, HEIGHT_LABEL);
 		this.add(labelRepetir);
-		
-		valueRepetir.setLocation(MARGEM_ESQUERDA_TEXT, 73);
+
+		valueRepetir.setLocation(90, 13);
 		valueRepetir.setSize(WIDTH_TEXT, HEIGHT_TEXT);
 		this.add(valueRepetir);
 	}
 
-	private void initEixoY() {
-		JLabel labelY = new JLabel("Eixo Y");
-		labelY.setLocation(MARGEM_ESQUERDA_LABEL,40);
-		labelY.setSize(WIDTH_LABEL, HEIGHT_LABEL);
-		this.add(labelY);
-		
-		valueY.setLocation(MARGEM_ESQUERDA_TEXT, 43);
-		valueY.setSize(WIDTH_TEXT, HEIGHT_TEXT);
-		this.add(valueY);
+	private void initMilessegundos() {
+		JLabel labelMilesec = new JLabel("Milissegundos");
+		labelMilesec.setLocation(220, 10);
+		labelMilesec.setSize(110, HEIGHT_LABEL);
+		this.add(labelMilesec);
+
+		valueMilli.setLocation(340, 13);
+		valueMilli.setSize(WIDTH_TEXT, HEIGHT_TEXT);
+		this.add(valueMilli);
 	}
 
-	private void initEixoX() {
-		JLabel labelX = new JLabel("Eixo X");
-		labelX.setLocation(MARGEM_ESQUERDA_LABEL, 10);
-		labelX.setSize(WIDTH_LABEL, HEIGHT_LABEL);
-		this.add(labelX);
-		
-		valueX.setLocation(MARGEM_ESQUERDA_TEXT, 13);
-		valueX.setSize(WIDTH_TEXT, HEIGHT_TEXT);
-		this.add(valueX);
+	public DefaultTableModel getTableModel() {
+		return tableModel;
+	}
+
+	private void addEventRemoveLetras(JTextField field) {
+		field.addKeyListener(new KeyListenerRemoverLetras(field));
 	}
 }
