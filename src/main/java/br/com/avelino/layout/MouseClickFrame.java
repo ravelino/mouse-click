@@ -28,7 +28,7 @@ public class MouseClickFrame extends JFrame {
 	
 	public MouseClickFrame () {
 		
-		super.setTitle("Mouse Click - By Rogério");
+		super.setTitle("Mouse Click - By Ravelino");
 		super.setSize(700, 500);
 		super.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent windowEvent) {

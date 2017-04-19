@@ -1,5 +1,8 @@
 package br.com.avelino.core;
 
+import javax.swing.JOptionPane;
+
+import org.apache.commons.lang.math.NumberUtils;
 import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
 
@@ -15,15 +18,26 @@ public class TeclaObserver implements NativeKeyListener {
 	
 
 	public void nativeKeyPressed(NativeKeyEvent e) {
-		if (NativeKeyEvent.getKeyText(e.getKeyCode()).equals("G")) {
+		
+		
+		if (NativeKeyEvent.VC_LEFT == e.getKeyCode()) {
+				
 			final Integer mousePositionX = MousePosition.getEscutaMouse().getPositionX();
 			final Integer mousePositionY = MousePosition.getEscutaMouse().getPositionY();
-			panel.getTableModel().addRow(new Object [] {mousePositionX, mousePositionY});
-		} else if (NativeKeyEvent.getKeyText(e.getKeyCode()).equals("P")) {
-			panel.timersStop();
-		} else if (NativeKeyEvent.getKeyText(e.getKeyCode()).equals("C")) {
+			
+			final String mili = JOptionPane.showInputDialog("Defina o intervalo ddo click em milissegundos.");
+			
+			if (NumberUtils.isDigits(mili)) {
+				panel.getTableModel().addRow(new Object [] {mousePositionX, mousePositionY, mili});
+			} else {
+				JOptionPane.showMessageDialog(null, "Digite apenas números");
+			}
+			
+		} else if (NativeKeyEvent.VC_UP == e.getKeyCode()) {
 			panel.timersStart();
-		}
+		} else if (NativeKeyEvent.VC_RIGHT == e.getKeyCode()) {
+			panel.timersStop();
+		} 
 	}
 
 	public void nativeKeyReleased(NativeKeyEvent e) {}

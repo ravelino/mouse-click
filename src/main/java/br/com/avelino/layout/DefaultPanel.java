@@ -6,18 +6,23 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
+import org.apache.commons.lang.StringUtils;
+
 import br.com.avelino.core.ClickAutomaticoTimer;
 import br.com.avelino.core.HookConfigure;
 import br.com.avelino.core.KeyListenerRemoverLetras;
+import br.com.avelino.core.MouseClickFileWritter;
 import br.com.avelino.to.ClickAutomaticoTO;
 
 public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
@@ -31,14 +36,27 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 	protected static final int WIDTH_TEXT = 100;
 	protected static final int HEIGHT_TEXT = 22;
 	protected static final int HEIGHT_LABEL = 30;
-
-	private DefaultTableModel tableModel = new DefaultTableModel();
-	private JTextField valueRepetir = new JTextField();
-	private JTextField valueMilli = new JTextField();
-
-	protected JButton buttonStartStop = new JButton();
 	
-	protected JButton buttonClearTable = new JButton();
+	private DefaultPanel panel = this;
+
+	private DefaultTableModel tableModel = new DefaultTableModel() {
+		private static final long serialVersionUID = -115961926037268221L;
+
+		@Override
+		public boolean isCellEditable(int row, int column) {
+			return (column == 2);
+		}
+	};
+	
+	private JTextField valueRepetir = new JTextField();
+
+	private JButton buttonStartStop = new JButton();
+	
+	private JButton buttonSalvar = new JButton();
+	
+	private JButton buttonCarregar = new JButton();
+	
+	private JButton buttonClear = new JButton();
 
 	private List<ClickAutomaticoTimer> listClickAutomaticoTimer = new ArrayList<ClickAutomaticoTimer>();
 
@@ -51,11 +69,13 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 
 		initButtonStartStop();
 		initRepetir();
-		initMilessegundos();
 		initButtonClear();
-		addEventButton();
+		initButtonSalvar();
+		initButtonCarregar();
+		addEventButtonStartStop();
 		addEventButtonClear();
-		addEventRemoveLetras(valueMilli);
+		addEventButtonSalvar();
+		addEventButtonCarregar();
 		addEventRemoveLetras(valueRepetir);
 
 		super.setSize(700, 500);
@@ -64,6 +84,7 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 	private void initTableModel() {
 		tableModel.addColumn("Posicão X");
 		tableModel.addColumn("Posição Y");
+		tableModel.addColumn("Milissegundos");
 		JTable table = new JTable(tableModel);
 		JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane.setLocation(10, 60);
@@ -72,26 +93,110 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 		super.add(scrollPane);
 	}
 	
+	private void initButtonSalvar() {
+		buttonSalvar = new JButton("Salvar lista");
+		buttonSalvar.setLocation(260, 400);
+		buttonSalvar.setSize(180, HEIGHT_TEXT);
+		this.add(buttonSalvar);
+	}
+	
+	private void initButtonCarregar() {
+		buttonCarregar = new JButton("Carregar lista salva");
+		buttonCarregar.setLocation(50, 400);
+		buttonCarregar.setSize(180, HEIGHT_TEXT);
+		this.add(buttonCarregar);
+	}
+	
 	private void initButtonClear() {
-		buttonClearTable = new JButton("Limpar lista");
-		buttonClearTable.setLocation(460, 400);
-		buttonClearTable.setSize(180, HEIGHT_TEXT);
-		this.add(buttonClearTable);
+		buttonClear = new JButton("Limpar lista");
+		buttonClear.setLocation(460, 400);
+		buttonClear.setSize(180, HEIGHT_TEXT);
+		this.add(buttonClear);
+	}
+	
+	private void addEventButtonCarregar() {
+		buttonCarregar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				final List<ClickAutomaticoTO> fileSaveList = MouseClickFileWritter.readFile();
+				
+				final List<String> indentificadores = createListToSelect(fileSaveList);
+				
+				final String identificador = (String) JOptionPane.showInputDialog(panel, 
+				        "Qual item deseja carregar?",
+				        "Selecione um item da lista",
+				        JOptionPane.QUESTION_MESSAGE, 
+				        null, 
+				        indentificadores.toArray(), 
+				        indentificadores.get(0));
+				
+				if (StringUtils.isNotEmpty(identificador)) {
+					
+					buttonClear.doClick();
+					
+					final List<ClickAutomaticoTO> newList = fileSaveList
+						.stream()
+						.filter(item -> item.getIdentificador().equals(identificador))
+						.collect(Collectors.toList());
+					
+					populateFields(newList);
+				}
+			}
+		});
+	}
+	
+	private void populateFields(List<ClickAutomaticoTO> newList) {
+		newList.forEach(item -> {
+			tableModel.addRow(new Object [] {item.getEixoX(), item.getEixoY(), item.getMilessegundos()});
+		});
+		
+		valueRepetir.setText(String.valueOf(newList.get(0).getQtdRepetir()));
+	}
+
+	private List<String> createListToSelect(List<ClickAutomaticoTO> fileSaveList) {
+		final List<String> identificadores = new ArrayList<>();
+		
+		fileSaveList.forEach(item -> {
+			if (!identificadores.contains(item.getIdentificador())) {
+				identificadores.add(item.getIdentificador());
+			}
+		});
+		
+		return identificadores;
 	}
 	
 	private void addEventButtonClear() {
-		buttonClearTable.addActionListener(new ActionListener() {
+		buttonClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				valueRepetir.setText("");
-				valueMilli.setText("");
 				while (tableModel.getRowCount() > 0) {
 					tableModel.removeRow(0);
 				}
 			}
 		});
 	}
+	
+	private void addEventButtonSalvar() {
+		buttonSalvar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				if (tableModel.getRowCount() > 0) {
+					final String identificador = JOptionPane.showInputDialog("Qual o nome que gostaria de salvar a lista?");
+					if (StringUtils.isNotEmpty(identificador)) {
+						final List<ClickAutomaticoTO> listClickAutomaticoTO = createListClickAutomaticoTO();
+						listClickAutomaticoTO.forEach(item -> item.identificador(identificador));
+						MouseClickFileWritter.write(listClickAutomaticoTO);
+					}
+					
+					
+				} else {
+					JOptionPane.showMessageDialog(panel, "Você não tem itens na lista");
+				}
+			}
+		});
+	}
 
-	private void addEventButton() {
+	private void addEventButtonStartStop() {
 		buttonStartStop.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
@@ -105,33 +210,43 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 					} else {
 						buttonStartStop.setText(LABEL_PARAR);
 
-						for (int i = 0; i < linhas; i++) {
-							final Integer eixoX = (Integer) tableModel.getValueAt(i, 0);
-							final Integer eixoY = (Integer) tableModel.getValueAt(i, 1);
-							
-							final Optional<String> optionalRepetir = Optional.of(valueRepetir.getText()).filter((valor)-> valor.length() > 0);
-							final Optional<String> optionalMilli = Optional.of(valueMilli.getText()).filter((valor)-> valor.length() > 0);
-							final String rep = optionalRepetir.orElse("0");
-							final String milli = optionalMilli.orElse("0");
-							
-							final ClickAutomaticoTO to = 
-									ClickAutomaticoTO
-										.builder()
-										.eixoX(eixoX)
-										.eixoY(eixoY)
-										.qtdRepetir(Long.valueOf(rep))
-										.milessegundos(Integer.valueOf(milli))
-										.itemLista(i + 1)
-										.tamanhoLista(linhas);
-							
-								listClickAutomaticoTimer.add(new ClickAutomaticoTimer(to));
-						}
-						
+						final List<ClickAutomaticoTO> listClickAutomaticoTO = createListClickAutomaticoTO();
+						listClickAutomaticoTO.forEach(item-> listClickAutomaticoTimer.add(new ClickAutomaticoTimer(item)));
 						timersStart();
 					}
 				}
 			}
 		});
+	}
+	
+	private List<ClickAutomaticoTO> createListClickAutomaticoTO() {
+		final Integer linhas = tableModel.getRowCount();
+		
+		final List<ClickAutomaticoTO> listClickAutomaticoTO = new ArrayList<ClickAutomaticoTO>();
+		
+		for (int i = 0; i < linhas; i++) {
+			
+			final Integer eixoX = Integer.valueOf(tableModel.getValueAt(i, 0).toString());
+			final Integer eixoY = Integer.valueOf(tableModel.getValueAt(i, 1).toString());
+			final Integer milli = Integer.valueOf(tableModel.getValueAt(i, 2).toString());
+			
+			final Optional<String> optionalRepetir = Optional.of(valueRepetir.getText()).filter((valor)-> valor.length() > 0);
+			final String rep = optionalRepetir.orElse("0");
+			
+			final ClickAutomaticoTO to = 
+					ClickAutomaticoTO
+						.builder()
+						.eixoX(eixoX)
+						.eixoY(eixoY)
+						.qtdRepetir(Long.valueOf(rep))
+						.milessegundos(milli)
+						.itemLista(i + 1)
+						.tamanhoLista(linhas);
+			
+			listClickAutomaticoTO.add(to);
+		}
+		
+		return listClickAutomaticoTO; 
 	}
 
 	public void timersStart() {
@@ -164,17 +279,6 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 		valueRepetir.setLocation(90, 13);
 		valueRepetir.setSize(WIDTH_TEXT, HEIGHT_TEXT);
 		this.add(valueRepetir);
-	}
-
-	private void initMilessegundos() {
-		JLabel labelMilesec = new JLabel("Milissegundos");
-		labelMilesec.setLocation(220, 10);
-		labelMilesec.setSize(110, HEIGHT_LABEL);
-		this.add(labelMilesec);
-
-		valueMilli.setLocation(340, 13);
-		valueMilli.setSize(WIDTH_TEXT, HEIGHT_TEXT);
-		this.add(valueMilli);
 	}
 
 	public DefaultTableModel getTableModel() {

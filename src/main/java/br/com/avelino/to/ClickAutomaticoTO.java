@@ -1,6 +1,8 @@
 package br.com.avelino.to;
 
 public class ClickAutomaticoTO {
+	
+	private String identificador;
 
 	private Long qtdRepetir;
 	
@@ -8,7 +10,7 @@ public class ClickAutomaticoTO {
 	
 	private Integer eixoY;
 	
-	private int milessegundos;
+	private Integer milessegundos;
 	
 	private Integer itemLista;
 	
@@ -20,6 +22,15 @@ public class ClickAutomaticoTO {
 		return new ClickAutomaticoTO();
 	}
 	
+	public String getIdentificador() {
+		return identificador;
+	}
+
+	public ClickAutomaticoTO identificador(String identificador) {
+		this.identificador = identificador;
+		return this;
+	}
+
 	public Long getQtdRepetir() {
 		return qtdRepetir;
 	}
@@ -28,10 +39,10 @@ public class ClickAutomaticoTO {
 		return this;
 	}
 	
-	public int getMilessegundos() {
+	public Integer getMilessegundos() {
 		return milessegundos;
 	}
-	public ClickAutomaticoTO milessegundos(int milessegundos) {
+	public ClickAutomaticoTO milessegundos(Integer milessegundos) {
 		this.milessegundos = milessegundos;
 		return this;
 	}
@@ -64,4 +75,12 @@ public class ClickAutomaticoTO {
 		this.tamanhoLista = tamanhoLista;
 		return this;
 	}
+
+	@Override
+	public String toString() {
+		return "ClickAutomaticoTO [identificador=" + identificador + ", qtdRepetir=" + qtdRepetir + ", eixoX=" + eixoX
+				+ ", eixoY=" + eixoY + ", milessegundos=" + milessegundos + ", itemLista=" + itemLista
+				+ ", tamanhoLista=" + tamanhoLista + "]";
+	}
+	
 }
