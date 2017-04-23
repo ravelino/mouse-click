@@ -15,11 +15,15 @@ import java.sql.Statement;
  */
 public class MouseClickDBConnection {
 	
-	private static Connection connection;
+	private Connection connection;
 	
-	private static Statement statement;
+	private Statement statement;
 	
-	public static void createDataBaseIfNotExists() {
+	public MouseClickDBConnection() {
+		openStatement();
+	} 
+	
+	public void createDataBaseIfNotExists() {
 		StringBuilder sb = new StringBuilder();
 		sb
 			.append("CREATE TABLE IF NOT EXISTS mouse_registers ")
@@ -36,37 +40,35 @@ public class MouseClickDBConnection {
 		update(sb.toString());
 	}
 	
-	public static ResultSet executeQuery(String query) {
+	public ResultSet executeQuery(String query) {
 		ResultSet rs = null;
-		
+		openStatement();
 		try {
-			final Statement st = getStatement();
 			
-			 rs = st.executeQuery(query);
+			 rs = statement.executeQuery(query);
 			 
 		} catch (SQLException e) {
 			System.out.println("Erro ao executar query");
 		}
+		closeStatement();
 		return rs;
 	}
 	
-	public static void closeStatement() {
+	public void closeStatement() {
 		try {
-			getStatement().close();
+			statement.close();
+			closeConnection();
 		} catch (SQLException e) {
 			System.out.println("Erro ao fechar statement");
 		}
 	}
 	
-	public static void update(String expression) {
-
-        int i;
+	public void update(String expression) {
+		openStatement();
         
 		try {
 			
-			final Statement st = getStatement();
-			
-			i = st.executeUpdate(expression);
+			int i = statement.executeUpdate(expression);
 			
 			if (i == -1) {
 	            System.out.println("Ocorreu um erro ao realizar a query: " + expression);
@@ -75,31 +77,32 @@ public class MouseClickDBConnection {
 		} catch (SQLException e) {
 			System.out.println("Erro ao executar update: " + expression);
 		}
+		closeStatement();
     } 
 	
-	public static Connection getConnection() {
-		if (connection == null) {
-			try {
-				connection = DriverManager.getConnection("jdbc:hsqldb:file:mouseClick", "SA", "");
-			} catch (SQLException e) {
-				System.out.println("Erro ao obter conexao.");
-			}
+	public void openConnection() {
+		try {
+			connection = DriverManager.getConnection("jdbc:hsqldb:file:mouseClick", "SA", "");
+		} catch (SQLException e) {
+			System.out.println("Erro ao abrir conexao");
 		}
-		
-		return connection;
 	}
 	
-	public static Statement getStatement() {
-		
-		if (statement == null) {
-			try {
-				statement = getConnection().createStatement();
-			} catch (SQLException e) {
-				System.out.println("Erro ao obterStatement");
-			}
+	public void openStatement() {
+		try {
+			openConnection();
+			statement = connection.createStatement();
+		} catch (SQLException e) {
+			System.out.println("Erro ao criar statement");
 		}
-		
-		return statement; 
+	}
+	
+	private void closeConnection() {
+		try {
+			connection.close();
+		} catch (SQLException e) {
+			System.out.println("Erro ao fechar conexao");
+		}
 	}
 	
 

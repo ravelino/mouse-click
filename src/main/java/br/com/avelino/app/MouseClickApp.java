@@ -19,10 +19,12 @@ public class MouseClickApp {
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				MouseClickDBConnection.createDataBaseIfNotExists();
-				
+				MouseClickDBConnection db = new MouseClickDBConnection();
+				db.createDataBaseIfNotExists();
 				new MouseClickFrame();
 			}
 		});
 	}
+	
+	
 }

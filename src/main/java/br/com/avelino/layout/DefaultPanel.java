@@ -190,11 +190,13 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 		
 		if (StringUtils.isNotEmpty(identificador)) {
 			
-			fileSaveList.forEach(item -> {
+			final List<ClickAutomaticoTO> listIdentica = mouseRegisterDao.findByIdentificador(identificador);
+			
+			listIdentica.forEach(item -> {
 				tableModel.addRow(new Object [] {item.getEixoX(), item.getEixoY(), item.getMilessegundos()});
 			});
 			
-			valueRepetir.setText(String.valueOf(fileSaveList.get(0).getQtdRepetir()));
+			valueRepetir.setText(String.valueOf(listIdentica.get(0).getQtdRepetir()));
 		}
 	}
 

@@ -82,5 +82,60 @@ public class ClickAutomaticoTO {
 				+ ", eixoY=" + eixoY + ", milessegundos=" + milessegundos + ", itemLista=" + itemLista
 				+ ", tamanhoLista=" + tamanhoLista + "]";
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((eixoX == null) ? 0 : eixoX.hashCode());
+		result = prime * result + ((eixoY == null) ? 0 : eixoY.hashCode());
+		result = prime * result + ((identificador == null) ? 0 : identificador.hashCode());
+		result = prime * result + ((itemLista == null) ? 0 : itemLista.hashCode());
+		result = prime * result + ((milessegundos == null) ? 0 : milessegundos.hashCode());
+		result = prime * result + ((qtdRepetir == null) ? 0 : qtdRepetir.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ClickAutomaticoTO other = (ClickAutomaticoTO) obj;
+		if (eixoX == null) {
+			if (other.eixoX != null)
+				return false;
+		} else if (!eixoX.equals(other.eixoX))
+			return false;
+		if (eixoY == null) {
+			if (other.eixoY != null)
+				return false;
+		} else if (!eixoY.equals(other.eixoY))
+			return false;
+		if (identificador == null) {
+			if (other.identificador != null)
+				return false;
+		} else if (!identificador.equals(other.identificador))
+			return false;
+		if (itemLista == null) {
+			if (other.itemLista != null)
+				return false;
+		} else if (!itemLista.equals(other.itemLista))
+			return false;
+		if (milessegundos == null) {
+			if (other.milessegundos != null)
+				return false;
+		} else if (!milessegundos.equals(other.milessegundos))
+			return false;
+		if (qtdRepetir == null) {
+			if (other.qtdRepetir != null)
+				return false;
+		} else if (!qtdRepetir.equals(other.qtdRepetir))
+			return false;
+		return true;
+	}
 	
 }
