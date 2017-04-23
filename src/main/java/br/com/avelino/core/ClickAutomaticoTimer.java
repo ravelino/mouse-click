@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.swing.Timer;
 
+import br.com.avelino.layout.DefaultPanel;
 import br.com.avelino.to.ClickAutomaticoTO;
 
 /**
@@ -26,9 +27,12 @@ public class ClickAutomaticoTimer implements ActionListener {
 	
 	private List<ClickAutomaticoTimer> listClickAutomaticoTimer;
 	
+	private DefaultPanel panel;
 	
-	public ClickAutomaticoTimer(ClickAutomaticoTO clickAutomaticoTO) {
+	
+	public ClickAutomaticoTimer(ClickAutomaticoTO clickAutomaticoTO, DefaultPanel panel) {
 		this.clickAutomaticoTO = clickAutomaticoTO;
+		this.panel = panel;
 		this.timer = new Timer(clickAutomaticoTO.getMilessegundos(), this);
 	}
 	
@@ -43,6 +47,8 @@ public class ClickAutomaticoTimer implements ActionListener {
     }
     
 	public synchronized void actionPerformed(ActionEvent ev) {
+		Boolean restart = Boolean.FALSE;
+		
 		try {
 			if (clickAutomaticoTO.getQtdRepetir() > 0) {
 				final Robot r = new Robot();
@@ -52,13 +58,18 @@ public class ClickAutomaticoTimer implements ActionListener {
 				clickAutomaticoTO.qtdRepetir(clickAutomaticoTO.getQtdRepetir() - 1);
 				
 				if (clickAutomaticoTO.getTamanhoLista() == clickAutomaticoTO.getItemLista()) {
+					restart = clickAutomaticoTO.getTamanhoLista() == 1;
 					listClickAutomaticoTimer.get(0).start(listClickAutomaticoTimer);
 				} else {
 					listClickAutomaticoTimer.get(clickAutomaticoTO.getItemLista()).start(listClickAutomaticoTimer);
 				}
+			} else {
+				panel.setLabelComecarButtonStartStop();
 			}
 			
-			timer.stop();
+			if (!restart) {		
+				timer.stop();
+			}	
 			
 		} catch (AWTException e) {
 			e.printStackTrace();

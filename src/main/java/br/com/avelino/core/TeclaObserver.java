@@ -34,7 +34,7 @@ public class TeclaObserver implements NativeKeyListener {
 			}
 			
 		} else if (NativeKeyEvent.VC_UP == e.getKeyCode()) {
-			panel.timersStart();
+			panel.timersStart(Boolean.TRUE);
 		} else if (NativeKeyEvent.VC_RIGHT == e.getKeyCode()) {
 			panel.timersStop();
 		} 

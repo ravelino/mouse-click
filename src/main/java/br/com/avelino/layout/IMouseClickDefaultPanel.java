@@ -8,6 +8,6 @@ public interface IMouseClickDefaultPanel {
 	
 	void timersStop();
 	
-	void timersStart();
+	void timersStart(Boolean doClick);
 
 }

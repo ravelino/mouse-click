@@ -5,6 +5,7 @@ package br.com.avelino.app;
 
 import javax.swing.SwingUtilities;
 
+import br.com.avelino.db.MouseClickDBConnection;
 import br.com.avelino.layout.MouseClickFrame;
 
 
@@ -13,11 +14,13 @@ import br.com.avelino.layout.MouseClickFrame;
  *
  */
 public class MouseClickApp {
-
+	
 	public static void main(String[] args) {
-
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
+				MouseClickDBConnection.createDataBaseIfNotExists();
+				
 				new MouseClickFrame();
 			}
 		});

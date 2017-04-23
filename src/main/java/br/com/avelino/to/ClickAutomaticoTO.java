@@ -4,7 +4,7 @@ public class ClickAutomaticoTO {
 	
 	private String identificador;
 
-	private Long qtdRepetir;
+	private Integer qtdRepetir;
 	
 	private Integer eixoX;
 	
@@ -31,10 +31,10 @@ public class ClickAutomaticoTO {
 		return this;
 	}
 
-	public Long getQtdRepetir() {
+	public Integer getQtdRepetir() {
 		return qtdRepetir;
 	}
-	public ClickAutomaticoTO qtdRepetir(Long qtdRepetir) {
+	public ClickAutomaticoTO qtdRepetir(Integer qtdRepetir) {
 		this.qtdRepetir = qtdRepetir;
 		return this;
 	}
