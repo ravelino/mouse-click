@@ -250,9 +250,9 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 				
 				if (linhas > 0) {
 					
-					if (StringUtils.isNotEmpty(identificador)) {
+					/*if (StringUtils.isNotEmpty(identificador)) {
 						populateTableModel(mouseRegisterDao.findByIdentificador(identificador));
-					}
+					}*/
 
 					String label = buttonStartStop.getText();
 

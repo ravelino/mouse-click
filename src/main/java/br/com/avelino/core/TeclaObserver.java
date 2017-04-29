@@ -21,6 +21,8 @@ public class TeclaObserver implements NativeKeyListener {
 		
 		
 		if (NativeKeyEvent.VC_LEFT == e.getKeyCode()) {
+			
+			panel.timersStop();
 				
 			final Integer mousePositionX = MousePosition.getEscutaMouse().getPositionX();
 			final Integer mousePositionY = MousePosition.getEscutaMouse().getPositionY();
@@ -34,6 +36,7 @@ public class TeclaObserver implements NativeKeyListener {
 			}
 			
 		} else if (NativeKeyEvent.VC_UP == e.getKeyCode()) {
+			panel.timersStop();
 			panel.timersStart(Boolean.TRUE);
 		} else if (NativeKeyEvent.VC_RIGHT == e.getKeyCode()) {
 			panel.timersStop();
