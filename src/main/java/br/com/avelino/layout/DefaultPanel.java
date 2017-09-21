@@ -3,6 +3,8 @@ package br.com.avelino.layout;
 import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -10,13 +12,17 @@ import java.util.Optional;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import br.com.avelino.core.ClickAutomaticoTimer;
 import br.com.avelino.core.HookConfigure;
@@ -27,6 +33,8 @@ import br.com.avelino.to.ClickAutomaticoTO;
 public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 
 	private static final long serialVersionUID = 1302762546797380758L;
+	
+	final static Logger log = Logger.getLogger(DefaultPanel.class);
 
 	private static final String LABEL_COMECAR = "Começar";
 	private static final String LABEL_PARAR = "Parar";
@@ -119,8 +127,12 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 	private void initTableModel() {
 		tableModel.addColumn("Posicão X");
 		tableModel.addColumn("Posição Y");
+		tableModel.addColumn("Tecla");
 		tableModel.addColumn("Milissegundos");
+		tableModel.addColumn("Descrição");
 		JTable table = new JTable(tableModel);
+		jTableAddEventListner(table);
+		
 		JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane.setLocation(10, 60);
 		scrollPane.setSize(600, 320);
@@ -161,12 +173,16 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 		buttonCarregar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				
+				log.info("#### Carregando ... ");
+				
+				log.info("### DAO = " + mouseRegisterDao);
+				
 				final List<ClickAutomaticoTO> fileSaveList = mouseRegisterDao.findAll();
+				
+				log.info("#### carregou: " + fileSaveList.toString());
 				
 				if (fileSaveList.size() > 0) {
 					final List<String> indentificadores = createListToSelect(fileSaveList);
-					
-					buttonClear.doClick();
 					
 					identificador = (String) JOptionPane.showInputDialog(panel, 
 					        "Qual item deseja carregar?",
@@ -193,7 +209,13 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 			final List<ClickAutomaticoTO> listIdentica = mouseRegisterDao.findByIdentificador(identificador);
 			
 			listIdentica.forEach(item -> {
-				tableModel.addRow(new Object [] {item.getEixoX(), item.getEixoY(), item.getMilessegundos()});
+				tableModel.addRow(new Object [] {
+						item.getEixoX(),
+						item.getEixoY(),
+						item.getTecla(),
+						item.getMilessegundos(),
+						item.getDescricao()
+				});
 			});
 			
 			valueRepetir.setText(String.valueOf(listIdentica.get(0).getQtdRepetir()));
@@ -231,7 +253,7 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 				if (tableModel.getRowCount() > 0) {
 					final String identificador = JOptionPane.showInputDialog("Qual o nome que gostaria de salvar a lista?");
 					if (StringUtils.isNotEmpty(identificador)) {
-						final List<ClickAutomaticoTO> listClickAutomaticoTO = createListClickAutomaticoTO();
+						final List<ClickAutomaticoTO> listClickAutomaticoTO = createListClickAutomaticoTO(identificador);
 						listClickAutomaticoTO.forEach(item -> item.identificador(identificador));
 						mouseRegisterDao.insert(listClickAutomaticoTO);
 					}
@@ -250,17 +272,13 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 				
 				if (linhas > 0) {
 					
-					/*if (StringUtils.isNotEmpty(identificador)) {
-						populateTableModel(mouseRegisterDao.findByIdentificador(identificador));
-					}*/
-
 					String label = buttonStartStop.getText();
 
 					if (LABEL_PARAR.equals(label)) {
 						timersStop();
 					} else {
 						buttonStartStop.setText(LABEL_PARAR);
-						final List<ClickAutomaticoTO> listClickAutomaticoTO = createListClickAutomaticoTO();
+						final List<ClickAutomaticoTO> listClickAutomaticoTO = createListClickAutomaticoTO(null);
 						listClickAutomaticoTimer.clear();
 						listClickAutomaticoTO.forEach(item-> listClickAutomaticoTimer.add(new ClickAutomaticoTimer(item, panel)));
 						timersStart(Boolean.FALSE);
@@ -270,7 +288,7 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 		});
 	}
 	
-	private List<ClickAutomaticoTO> createListClickAutomaticoTO() {
+	private List<ClickAutomaticoTO> createListClickAutomaticoTO(String identificador) {
 		final Integer linhas = tableModel.getRowCount();
 		
 		final List<ClickAutomaticoTO> listClickAutomaticoTO = new ArrayList<ClickAutomaticoTO>();
@@ -279,9 +297,12 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 			
 			final Integer eixoX = Integer.valueOf(tableModel.getValueAt(i, 0).toString());
 			final Integer eixoY = Integer.valueOf(tableModel.getValueAt(i, 1).toString());
-			final Integer milli = Integer.valueOf(tableModel.getValueAt(i, 2).toString());
+			final String tecla = tableModel.getValueAt(i, 2).toString();
+			final Integer milli = Integer.valueOf(tableModel.getValueAt(i, 3).toString());
 			
 			final Optional<String> optionalRepetir = Optional.of(valueRepetir.getText()).filter((valor)-> valor.length() > 0);
+			String descricao = ("".equals(tableModel.getValueAt(i, 4).toString())) ? identificador : tableModel.getValueAt(i, 4).toString();
+			
 			final String rep = optionalRepetir.orElse("0");
 			
 			final ClickAutomaticoTO to = 
@@ -289,6 +310,8 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 						.builder()
 						.eixoX(eixoX)
 						.eixoY(eixoY)
+						.tecla(tecla)
+						.descricao(descricao)
 						.qtdRepetir(Integer.valueOf(rep))
 						.milessegundos(milli)
 						.itemLista(i + 1)
@@ -343,5 +366,45 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 	
 	public void setLabelComecarButtonStartStop() {
 		buttonStartStop.setText(LABEL_COMECAR);
+	}
+	
+	private void jTableAddEventListner(JTable table) {
+		table.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {}
+			
+			@Override
+			public void mousePressed(MouseEvent e) {}
+			
+			@Override
+			public void mouseExited(MouseEvent e) {}
+			
+			@Override
+			public void mouseEntered(MouseEvent e) {}
+			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (SwingUtilities.isRightMouseButton(e)) {
+					int row = table.rowAtPoint(e.getPoint());
+				    JPopupMenu popUp = new JPopupMenu("Menu");
+				    JMenuItem menu = new JMenuItem("Remover Linha");
+				    
+				    jMenuAddEventListener(menu, row);
+				    
+				    popUp.add(menu);
+				    popUp.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+			
+			private void jMenuAddEventListener(JMenuItem menu, int row) {
+				 menu.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						tableModel.removeRow(row);
+					}
+				});
+			}
+		});
 	}
 }

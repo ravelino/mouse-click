@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.swing.Timer;
 
+import br.com.avelino.core.TeclaObserver.KeyBord;
 import br.com.avelino.layout.DefaultPanel;
 import br.com.avelino.to.ClickAutomaticoTO;
 
@@ -20,6 +21,8 @@ import br.com.avelino.to.ClickAutomaticoTO;
  *
  */
 public class ClickAutomaticoTimer implements ActionListener {
+	
+	private static final String VAZIO = "";
 	
 	private Timer timer;
 	
@@ -51,10 +54,19 @@ public class ClickAutomaticoTimer implements ActionListener {
 		
 		try {
 			if (clickAutomaticoTO.getQtdRepetir() > 0) {
+				
 				final Robot r = new Robot();
+				
 				r.mouseMove(clickAutomaticoTO.getEixoX(), clickAutomaticoTO.getEixoY());
-				r.mousePress(InputEvent.BUTTON1_MASK);
-				r.mouseRelease(InputEvent.BUTTON1_MASK);
+				
+				if (VAZIO.equals(clickAutomaticoTO.getTecla())) {
+					r.mousePress(InputEvent.BUTTON1_MASK);
+					r.mouseRelease(InputEvent.BUTTON1_MASK);
+				} else {
+					r.keyPress(KeyBord.valueOf(clickAutomaticoTO.getTecla()).getKeyCode());
+					r.keyRelease(KeyBord.valueOf(clickAutomaticoTO.getTecla()).getKeyCode());
+				}
+				
 				clickAutomaticoTO.qtdRepetir(clickAutomaticoTO.getQtdRepetir() - 1);
 				
 				if (clickAutomaticoTO.getTamanhoLista() == clickAutomaticoTO.getItemLista()) {

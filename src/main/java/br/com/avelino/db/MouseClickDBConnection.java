@@ -32,12 +32,18 @@ public class MouseClickDBConnection {
 			.append(" identificador VARCHAR(256),")
 			.append(" eixoX INTEGER,")
 			.append(" eixoY INTEGER,")
+			.append(" tecla VARCHAR(256),")
 			.append(" milissegundos INTEGER,")
-			.append(" repetir INTEGER")
+			.append(" repetir INTEGER,")
+			.append(" descricao VARCHAR(256)")
 			.append(" )");
 			
 		
 		update(sb.toString());
+	}
+	
+	public void dropTable(String tableName) {
+		update("DROP TABLE ".concat(tableName));
 	}
 	
 	public ResultSet executeQuery(String query) {

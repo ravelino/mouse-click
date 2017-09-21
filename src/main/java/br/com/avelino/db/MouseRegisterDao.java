@@ -5,26 +5,31 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
+import br.com.avelino.layout.DefaultPanel;
 import br.com.avelino.to.ClickAutomaticoTO;
 
 public class MouseRegisterDao {
+	
+	final static Logger log = Logger.getLogger(DefaultPanel.class);
 	
 	private MouseClickDBConnection db = new MouseClickDBConnection();
 	
 	public void insert(List<ClickAutomaticoTO> listClickAutomaticoTO) {
 		
-		
-		
 		listClickAutomaticoTO.forEach(item -> {
 			final StringBuilder sb = new StringBuilder();
 			sb
-			.append("INSERT INTO mouse_registers (identificador, eixoX, eixoY, milissegundos, repetir) ")
+			.append("INSERT INTO mouse_registers (identificador, eixoX, eixoY, tecla, milissegundos, repetir, descricao) ")
 			.append("Values ( ")
 			.append("'" + item.getIdentificador()).append("', ")
 			.append(item.getEixoX()).append(", ")
 			.append(item.getEixoY()).append(", ")
+			.append("'" + item.getTecla()).append("', ")
 			.append(item.getMilessegundos()).append(", ")
-			.append(item.getQtdRepetir())
+			.append(item.getQtdRepetir()).append(", ")
+			.append("'" + item.getDescricao()).append("'")
 			.append(")");
 			
 			db.update(sb.toString());
@@ -37,7 +42,11 @@ public class MouseRegisterDao {
 		try {
 			final String query = "select * from mouse_registers where identificador = '" + identificador + "'";
 			
+			log.info("### DB = " + db);
+			
 			final ResultSet rs = db.executeQuery(query);
+			
+			log.info("### Executou Query, resultados:" + rs.toString());
 			
 			return getListaClickAutomaticoTO(rs);
 			
@@ -49,16 +58,17 @@ public class MouseRegisterDao {
 
 	public List<ClickAutomaticoTO> findAll() {
 		
-		
 		try {
+			
+			
 			final String query = "select * from mouse_registers";
 			
 			final ResultSet rs = db.executeQuery(query);
-			
+			log.info("### ResultSet = " + rs);
 			return getListaClickAutomaticoTO(rs);
 			
 		} catch (SQLException e) {
-			System.out.println("Erro findAll resultset");
+			log.error("Erro findAll resultset: " + e.getMessage());
 		}
 		
 		return null;
@@ -75,8 +85,10 @@ public class MouseRegisterDao {
 											.identificador(rs.getString(2))
 											.eixoX(rs.getInt(3))
 											.eixoY(rs.getInt(4))
-											.milessegundos(rs.getInt(5))
-											.qtdRepetir(rs.getInt(6));
+											.tecla(rs.getString(5))
+											.milessegundos(rs.getInt(6))
+											.qtdRepetir(rs.getInt(7))
+											.descricao(rs.getString(8));
 			
 			list.add(to);
 		}
