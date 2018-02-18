@@ -46,14 +46,14 @@ public class DefaultPanel extends Panel implements IMouseClickDefaultPanel {
 	
 	private DefaultPanel panel = this;
 
-	private DefaultTableModel tableModel = new DefaultTableModel() {
+	private DefaultTableModel tableModel = new DefaultTableModel();/* {
 		private static final long serialVersionUID = -115961926037268221L;
 
 		@Override
 		public boolean isCellEditable(int row, int column) {
 			return (column == 2);
 		}
-	};
+	};*/
 	
 	private JTextField valueRepetir = new JTextField();
 
